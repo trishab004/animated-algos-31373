@@ -33,11 +33,11 @@ export const SortingVisualizer = ({ steps, currentStep, maxValue }: SortingVisua
   return (
     <div className="space-y-6">
       {/* Bars Container */}
-      <div className="glass p-8 rounded-2xl min-h-[400px] flex items-end justify-center gap-2">
+      <div className="glass p-8 rounded-2xl h-[400px] flex items-end justify-center gap-2">
         {currentStepData.array.map((value, index) => (
           <div
             key={index}
-            className="flex flex-col items-center justify-end flex-1 max-w-[80px] transition-all duration-300"
+            className="flex flex-col items-center justify-end flex-1 max-w-[80px] h-full transition-all duration-300"
           >
             <div
               className={`w-full rounded-t-lg transition-all duration-500 ${getBarColor(index)} shadow-lg`}
