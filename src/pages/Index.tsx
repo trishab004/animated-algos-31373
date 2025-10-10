@@ -189,7 +189,7 @@ const Index = () => {
     : 100;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col gradient-bg">
       <header className="w-full py-6 px-6">
         <div className="max-w-6xl mx-auto flex items-center gap-3">
           <div className="flex items-center justify-center w-12 h-12 rounded-xl gradient-primary glow-primary">
