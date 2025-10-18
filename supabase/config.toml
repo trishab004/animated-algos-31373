@@ -1,0 +1,7 @@
+project_id = "gjypitvxkqbomzduffqh"
+
+[functions.algo-mentor]
+verify_jwt = false
+
+[functions.recommend-algorithm]
+verify_jwt = false

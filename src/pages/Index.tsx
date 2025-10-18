@@ -10,6 +10,8 @@ import { SortingVisualizer, SortStep } from "@/components/SortingVisualizer";
 import { PlaybackControls } from "@/components/PlaybackControls";
 import { AlgorithmInfo } from "@/components/AlgorithmInfo";
 import { bubbleSort, quickSort, mergeSort } from "@/utils/sortingAlgorithms";
+import { AlgoChatbot } from "@/components/AlgoChatbot";
+import { AlgorithmRecommender } from "@/components/AlgorithmRecommender";
 
 const algorithms = [
   { 
@@ -206,6 +208,9 @@ const Index = () => {
 
       <main className="flex-1 w-full px-6 pb-12">
         <div className="max-w-6xl mx-auto space-y-8">
+          {/* AI Algorithm Recommender */}
+          <AlgorithmRecommender />
+
           {/* Main Control Panel */}
           <Card className="glass p-8 animate-fade-in">
             <div className="space-y-6">
@@ -323,6 +328,9 @@ const Index = () => {
           </p>
         </div>
       </footer>
+
+      {/* AI Chatbot Mentor */}
+      <AlgoChatbot currentStep={currentStep} algorithm={selectedAlgoData?.name} />
     </div>
   );
 };
