@@ -32,7 +32,7 @@ export const LinkedListVisualizer = ({ steps, currentStep }: LinkedListVisualize
     let currentIndex: number | null = currentStepData.head;
     const visited = new Set<number>();
     
-    while (currentIndex !== null && !visited.has(currentIndex)) {
+    while (currentIndex !== null && !visited.has(currentIndex) && currentStepData.nodes[currentIndex]) {
       visited.add(currentIndex);
       visualNodes.push(currentIndex);
       currentIndex = currentStepData.nodes[currentIndex]?.next ?? null;
@@ -65,6 +65,8 @@ export const LinkedListVisualizer = ({ steps, currentStep }: LinkedListVisualize
           ) : (
             visualList.map((nodeIndex, visualIndex) => {
               const node = currentStepData.nodes[nodeIndex];
+              if (!node) return null; // Skip if node doesn't exist
+              
               return (
                 <div key={nodeIndex} className="flex items-center gap-2">
                   {/* Node */}
