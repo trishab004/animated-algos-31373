@@ -211,11 +211,31 @@ const Index = () => {
           return;
         }
       } else if (selectedAlgorithm === "stack") {
-        const value = parseInt(dsValue);
-        
-        if (dsOperation === "push" && !isNaN(value)) {
-          steps = stackPush(currentStack, value);
-          setCurrentStack([...currentStack, value]);
+        if (dsOperation === "push") {
+          // Handle bulk input for push
+          const values = dsValue
+            .split(",")
+            .map(v => v.trim())
+            .filter(v => v && !isNaN(Number(v)))
+            .map(v => Number(v));
+          
+          if (values.length === 0) {
+            toast.error("Please enter valid numbers!");
+            return;
+          }
+          
+          // Push all values sequentially
+          let tempStack = [...currentStack];
+          let allSteps: StackStep[] = [];
+          
+          for (const value of values) {
+            const pushSteps = stackPush(tempStack, value);
+            allSteps = [...allSteps, ...pushSteps];
+            tempStack = [...tempStack, value];
+          }
+          
+          steps = allSteps;
+          setCurrentStack(tempStack);
         } else if (dsOperation === "pop") {
           steps = stackPop(currentStack);
           if (currentStack.length > 0) setCurrentStack(currentStack.slice(0, -1));
@@ -226,11 +246,31 @@ const Index = () => {
           return;
         }
       } else if (selectedAlgorithm === "queue") {
-        const value = parseInt(dsValue);
-        
-        if (dsOperation === "enqueue" && !isNaN(value)) {
-          steps = queueEnqueue(currentQueue, value);
-          setCurrentQueue([...currentQueue, value]);
+        if (dsOperation === "enqueue") {
+          // Handle bulk input for enqueue
+          const values = dsValue
+            .split(",")
+            .map(v => v.trim())
+            .filter(v => v && !isNaN(Number(v)))
+            .map(v => Number(v));
+          
+          if (values.length === 0) {
+            toast.error("Please enter valid numbers!");
+            return;
+          }
+          
+          // Enqueue all values sequentially
+          let tempQueue = [...currentQueue];
+          let allSteps: QueueStep[] = [];
+          
+          for (const value of values) {
+            const enqueueSteps = queueEnqueue(tempQueue, value);
+            allSteps = [...allSteps, ...enqueueSteps];
+            tempQueue = [...tempQueue, value];
+          }
+          
+          steps = allSteps;
+          setCurrentQueue(tempQueue);
         } else if (dsOperation === "dequeue") {
           steps = queueDequeue(currentQueue);
           if (currentQueue.length > 0) setCurrentQueue(currentQueue.slice(1));
@@ -436,7 +476,23 @@ const Index = () => {
                     </Select>
                   </div>
 
-                  {(dsOperation === "insert" || dsOperation === "push" || dsOperation === "enqueue" || dsOperation === "insert-head" || dsOperation === "insert-tail" || dsOperation === "search" || dsOperation === "delete") && (
+                  {/* Stack/Queue bulk input */}
+                  {(dsOperation === "push" || dsOperation === "enqueue") && (
+                    <div className="space-y-2">
+                      <Label htmlFor="ds-bulk-value" className="text-base">Values (comma-separated)</Label>
+                      <Input
+                        id="ds-bulk-value"
+                        value={dsValue}
+                        onChange={(e) => setDsValue(e.target.value)}
+                        placeholder="e.g., 10, 20, 30, 40"
+                        className="glass code-font"
+                      />
+                      <p className="text-xs text-muted-foreground">Enter comma-separated numbers</p>
+                    </div>
+                  )}
+                  
+                  {/* Single value input for other operations */}
+                  {(dsOperation === "insert" || dsOperation === "insert-head" || dsOperation === "insert-tail" || dsOperation === "search" || dsOperation === "delete") && (
                     <div className="space-y-2">
                       <Label htmlFor="ds-value" className="text-base">Value</Label>
                       <Input

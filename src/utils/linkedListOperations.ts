@@ -211,21 +211,30 @@ export const linkedListReverse = (nodes: LinkedListNode[], head: number | null):
     steps.push({
       nodes: [...workingNodes],
       operation: "reversing",
-      description: `Reversing pointer of node ${workingNodes[current].value}`,
-      highlightIndices: [current],
-      head
+      description: `Reversing pointer of node ${workingNodes[current].value} (prev=${prev !== null ? workingNodes[prev].value : 'null'}, current=${workingNodes[current].value}, next=${nextNode !== null ? workingNodes[nextNode].value : 'null'})`,
+      highlightIndices: current !== null ? [current] : [],
+      head: prev !== null ? prev : head
     });
 
     workingNodes[current].next = prev;
     prev = current;
     current = nextNode;
     stepCount++;
+    
+    // Show intermediate state after reversing the pointer
+    steps.push({
+      nodes: [...workingNodes],
+      operation: "reversing-progress",
+      description: `Pointer reversed. Moving to next node. New partial head is at node ${workingNodes[prev].value}`,
+      highlightIndices: [prev],
+      head: prev
+    });
   }
 
   steps.push({
     nodes: [...workingNodes],
     operation: "reverse-complete",
-    description: `List reversed successfully in ${stepCount} steps`,
+    description: `List reversed successfully! New head is at node ${prev !== null ? workingNodes[prev].value : 'null'}`,
     head: prev
   });
 

@@ -50,10 +50,10 @@ export const LinkedListVisualizer = ({ steps, currentStep }: LinkedListVisualize
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
         
         {/* Head Label */}
-        {currentStepData.head !== null && (
-          <div className="absolute top-4 left-4 flex items-center gap-2 bg-accent/20 px-3 py-1 rounded-lg">
-            <span className="text-xs font-semibold text-accent">HEAD</span>
-            <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+        {currentStepData.head !== null && visualList.length > 0 && (
+          <div className="absolute top-4 left-4 flex items-center gap-2 bg-primary/20 px-3 py-1 rounded-lg">
+            <span className="text-xs font-semibold text-primary">HEAD → Node {visualList[0]}</span>
+            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
           </div>
         )}
 
