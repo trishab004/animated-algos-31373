@@ -7,9 +7,11 @@ interface QueueVisualizerProps {
 }
 
 export const QueueVisualizer = ({ steps, currentStep }: QueueVisualizerProps) => {
+  if (!steps || steps.length === 0) return null;
+  
   const currentStepData = steps[currentStep] || steps[0];
   
-  if (!currentStepData) return null;
+  if (!currentStepData || !currentStepData.queue) return null;
 
   const getBlockColor = (index: number) => {
     if (currentStepData.highlightIndices?.includes(index)) {

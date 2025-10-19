@@ -7,9 +7,11 @@ interface LinkedListVisualizerProps {
 }
 
 export const LinkedListVisualizer = ({ steps, currentStep }: LinkedListVisualizerProps) => {
+  if (!steps || steps.length === 0) return null;
+  
   const currentStepData = steps[currentStep] || steps[0];
   
-  if (!currentStepData) return null;
+  if (!currentStepData || !currentStepData.nodes) return null;
 
   const getNodeColor = (index: number) => {
     if (currentStepData.highlightIndices?.includes(index)) {

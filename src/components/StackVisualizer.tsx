@@ -6,9 +6,11 @@ interface StackVisualizerProps {
 }
 
 export const StackVisualizer = ({ steps, currentStep }: StackVisualizerProps) => {
+  if (!steps || steps.length === 0) return null;
+  
   const currentStepData = steps[currentStep] || steps[0];
   
-  if (!currentStepData) return null;
+  if (!currentStepData || !currentStepData.stack) return null;
 
   const getBlockColor = (index: number) => {
     if (currentStepData.highlightIndex === index) {

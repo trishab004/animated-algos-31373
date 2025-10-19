@@ -6,9 +6,11 @@ interface ArrayVisualizerProps {
 }
 
 export const ArrayVisualizer = ({ steps, currentStep }: ArrayVisualizerProps) => {
+  if (!steps || steps.length === 0) return null;
+  
   const currentStepData = steps[currentStep] || steps[0];
   
-  if (!currentStepData) return null;
+  if (!currentStepData || !currentStepData.array) return null;
 
   const getBlockColor = (index: number) => {
     if (currentStepData.highlightIndices.includes(index)) {
