@@ -102,8 +102,19 @@ const algorithms = [
   },
 ];
 
+const dataStructureInfo: Record<string, any> = {
+  array: { name: "Array", timeComplexity: "Insert: O(n), Delete: O(n), Search: O(n)", spaceComplexity: "O(1)" },
+  stack: { name: "Stack", timeComplexity: "Push: O(1), Pop: O(1), Peek: O(1)", spaceComplexity: "O(n)" },
+  queue: { name: "Queue", timeComplexity: "Enqueue: O(1), Dequeue: O(1), Peek: O(1)", spaceComplexity: "O(n)" },
+  linkedlist: { name: "Linked List", timeComplexity: "Insert: O(1), Delete: O(n), Reverse: O(n)", spaceComplexity: "O(n)" },
+  binarytree: { name: "Binary Tree", timeComplexity: "Insert: O(n), Search: O(n), Traversal: O(n)", spaceComplexity: "O(h)" },
+  bst: { name: "Binary Search Tree", timeComplexity: "Insert: O(log n), Search: O(log n), Delete: O(log n)", spaceComplexity: "O(h)" },
+  heap: { name: "Heap", timeComplexity: "Build: O(n), Insert: O(log n), Extract: O(log n)", spaceComplexity: "O(n)" },
+  graph: { name: "Graph", timeComplexity: "BFS: O(V+E), DFS: O(V+E), Dijkstra: O(V²)", spaceComplexity: "O(V+E)" }
+};
+
 const Index = () => {
-  const [category, setCategory] = useState<"sorting" | "datastructures">("sorting");
+  const [category, setCategory] = useState<"sorting" | "linear" | "nonlinear">("sorting");
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>("");
   const [inputArray, setInputArray] = useState<string>("64, 34, 25, 12, 22, 11, 90");
   const [sortSteps, setSortSteps] = useState<SortStep[]>([]);
@@ -129,6 +140,7 @@ const Index = () => {
   const [heapType, setHeapType] = useState<"min" | "max">("min");
 
   const selectedAlgoData = algorithms.find(a => a.id === selectedAlgorithm);
+  const selectedDsInfo = dataStructureInfo[selectedAlgorithm];
 
   // Cleanup interval on unmount
   useEffect(() => {
@@ -392,10 +404,37 @@ const Index = () => {
         const startNodeId = parseInt(dsValue);
         
         if (dsOperation === "bfs" && !isNaN(startNodeId)) {
+          if (currentGraph.nodes.length === 0) {
+            toast.error("Please add nodes first!");
+            return;
+          }
+          const nodeExists = currentGraph.nodes.some(n => n.id === startNodeId);
+          if (!nodeExists) {
+            toast.error(`Node ${startNodeId} doesn't exist in the graph!`);
+            return;
+          }
           steps = graphBFS(currentGraph.nodes, currentGraph.edges, startNodeId);
         } else if (dsOperation === "dfs" && !isNaN(startNodeId)) {
+          if (currentGraph.nodes.length === 0) {
+            toast.error("Please add nodes first!");
+            return;
+          }
+          const nodeExists = currentGraph.nodes.some(n => n.id === startNodeId);
+          if (!nodeExists) {
+            toast.error(`Node ${startNodeId} doesn't exist in the graph!`);
+            return;
+          }
           steps = graphDFS(currentGraph.nodes, currentGraph.edges, startNodeId);
         } else if (dsOperation === "dijkstra" && !isNaN(startNodeId)) {
+          if (currentGraph.nodes.length === 0) {
+            toast.error("Please add nodes first!");
+            return;
+          }
+          const nodeExists = currentGraph.nodes.some(n => n.id === startNodeId);
+          if (!nodeExists) {
+            toast.error(`Node ${startNodeId} doesn't exist in the graph!`);
+            return;
+          }
           steps = graphDijkstra(currentGraph.nodes, currentGraph.edges, startNodeId);
         } else if (dsOperation === "add-node" && !isNaN(startNodeId)) {
           const newNode: GraphNode = { id: currentGraph.nodes.length, value: startNodeId };
@@ -405,6 +444,12 @@ const Index = () => {
         } else if (dsOperation === "add-edge") {
           const [from, to, weight] = dsValue.split(",").map(v => parseInt(v.trim()));
           if (!isNaN(from) && !isNaN(to)) {
+            const fromExists = currentGraph.nodes.some(n => n.id === from);
+            const toExists = currentGraph.nodes.some(n => n.id === to);
+            if (!fromExists || !toExists) {
+              toast.error(`Node ${!fromExists ? from : to} doesn't exist. Add nodes first!`);
+              return;
+            }
             const newEdge: GraphEdge = { from, to, weight: !isNaN(weight) ? weight : 1 };
             setCurrentGraph({ ...currentGraph, edges: [...currentGraph.edges, newEdge] });
             toast.success(`Added edge ${from} → ${to}${weight ? ` (weight: ${weight})` : ""}`);
@@ -526,9 +571,9 @@ const Index = () => {
                 </Button>
               </TabsContent>
 
-              <TabsContent value="datastructures" className="space-y-6">
+              <TabsContent value="linear" className="space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold mb-2">Configure Data Structure</h2>
+                  <h2 className="text-2xl font-bold mb-2">Configure Linear Data Structure</h2>
                   <p className="text-muted-foreground">Select a data structure and operation to visualize</p>
                 </div>
 
@@ -544,10 +589,6 @@ const Index = () => {
                         <SelectItem value="stack">Stack</SelectItem>
                         <SelectItem value="queue">Queue</SelectItem>
                         <SelectItem value="linkedlist">Linked List</SelectItem>
-                        <SelectItem value="binarytree">Binary Tree</SelectItem>
-                        <SelectItem value="bst">Binary Search Tree</SelectItem>
-                        <SelectItem value="heap">Heap (Min/Max)</SelectItem>
-                        <SelectItem value="graph">Graph</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -588,6 +629,110 @@ const Index = () => {
                             <SelectItem value="reverse">Reverse List</SelectItem>
                           </>
                         )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+
+                  {/* Stack/Queue/Heap build bulk input */}
+                  {(dsOperation === "push" || dsOperation === "enqueue" || dsOperation === "build") && (
+                    <div className="space-y-2">
+                      <Label htmlFor="ds-bulk-value" className="text-base">Values (comma-separated)</Label>
+                      <Input
+                        id="ds-bulk-value"
+                        value={dsValue}
+                        onChange={(e) => setDsValue(e.target.value)}
+                        placeholder="e.g., 10, 20, 30, 40"
+                        className="glass code-font"
+                      />
+                      <p className="text-xs text-muted-foreground">Enter comma-separated numbers</p>
+                    </div>
+                  )}
+                  
+                  {/* Single value input for operations */}
+                  {(dsOperation === "insert" || dsOperation === "insert-head" || dsOperation === "insert-tail" || dsOperation === "search" || dsOperation === "delete") && (
+                    <div className="space-y-2">
+                      <Label htmlFor="ds-value" className="text-base">Value</Label>
+                      <Input
+                        id="ds-value"
+                        type="number"
+                        value={dsValue}
+                        onChange={(e) => setDsValue(e.target.value)}
+                        placeholder="Enter value"
+                        className="glass code-font"
+                      />
+                    </div>
+                  )}
+
+                  {(dsOperation === "insert" || dsOperation === "delete") && selectedAlgorithm === "array" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="ds-position" className="text-base">Position/Index</Label>
+                      <Input
+                        id="ds-position"
+                        type="number"
+                        value={dsPosition}
+                        onChange={(e) => setDsPosition(e.target.value)}
+                        placeholder="Enter position"
+                        className="glass code-font"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-4">
+                  <Button onClick={handleGenerate} disabled={isPlaying} className="gradient-primary hover:opacity-90 transition-opacity text-white font-semibold py-6 px-8 text-lg glow-primary">
+                    <Zap className="w-5 h-5 mr-2" />
+                    Generate Visualization
+                  </Button>
+                  
+                  {selectedAlgorithm && (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        if (selectedAlgorithm === "array") setCurrentArray([5, 10, 15, 20, 25]);
+                        else if (selectedAlgorithm === "stack") setCurrentStack([]);
+                        else if (selectedAlgorithm === "queue") setCurrentQueue([]);
+                        else if (selectedAlgorithm === "linkedlist") setCurrentLinkedList({ nodes: [], head: null });
+                        setHasGenerated(false);
+                        toast.success("Data structure reset!");
+                      }}
+                      className="glass"
+                    >
+                      Reset {selectedAlgorithm}
+                    </Button>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="nonlinear" className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold mb-2">Configure Non-Linear Data Structure</h2>
+                  <p className="text-muted-foreground">Select a data structure and operation to visualize</p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="ds-type-nl" className="text-base">Data Structure</Label>
+                    <Select value={selectedAlgorithm} onValueChange={setSelectedAlgorithm}>
+                      <SelectTrigger id="ds-type-nl" className="glass">
+                        <SelectValue placeholder="Choose a data structure..." />
+                      </SelectTrigger>
+                      <SelectContent className="glass border-border bg-popover/95 backdrop-blur-xl">
+                        <SelectItem value="binarytree">Binary Tree</SelectItem>
+                        <SelectItem value="bst">Binary Search Tree</SelectItem>
+                        <SelectItem value="heap">Heap (Min/Max)</SelectItem>
+                        <SelectItem value="graph">Graph</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="ds-operation-nl" className="text-base">Operation</Label>
+                    <Select value={dsOperation} onValueChange={setDsOperation}>
+                      <SelectTrigger id="ds-operation-nl" className="glass">
+                        <SelectValue placeholder="Choose an operation..." />
+                      </SelectTrigger>
+                      <SelectContent className="glass border-border bg-popover/95 backdrop-blur-xl">
                         {selectedAlgorithm === "binarytree" && (
                           <>
                             <SelectItem value="insert">Insert</SelectItem>
@@ -641,12 +786,12 @@ const Index = () => {
                     </div>
                   )}
 
-                  {/* Stack/Queue/Heap build bulk input */}
-                  {(dsOperation === "push" || dsOperation === "enqueue" || dsOperation === "build") && (
+                  {/* Heap build bulk input */}
+                  {dsOperation === "build" && (
                     <div className="space-y-2">
-                      <Label htmlFor="ds-bulk-value" className="text-base">Values (comma-separated)</Label>
+                      <Label htmlFor="ds-bulk-value-nl" className="text-base">Values (comma-separated)</Label>
                       <Input
-                        id="ds-bulk-value"
+                        id="ds-bulk-value-nl"
                         value={dsValue}
                         onChange={(e) => setDsValue(e.target.value)}
                         placeholder="e.g., 10, 20, 30, 40"
@@ -656,12 +801,12 @@ const Index = () => {
                     </div>
                   )}
                   
-                  {/* Single value input for tree/graph operations */}
-                  {(dsOperation === "insert" || dsOperation === "insert-head" || dsOperation === "insert-tail" || dsOperation === "search" || dsOperation === "delete" || dsOperation === "extract" || dsOperation === "bfs" || dsOperation === "dfs" || dsOperation === "dijkstra" || dsOperation === "add-node") && (
+                  {/* Single value input for tree operations */}
+                  {(dsOperation === "insert" || dsOperation === "search" || dsOperation === "delete" || dsOperation === "extract" || dsOperation === "bfs" || dsOperation === "dfs" || dsOperation === "dijkstra" || dsOperation === "add-node") && (
                     <div className="space-y-2">
-                      <Label htmlFor="ds-value" className="text-base">Value</Label>
+                      <Label htmlFor="ds-value-nl" className="text-base">Value</Label>
                       <Input
-                        id="ds-value"
+                        id="ds-value-nl"
                         type="number"
                         value={dsValue}
                         onChange={(e) => setDsValue(e.target.value)}
@@ -680,29 +825,15 @@ const Index = () => {
                   {/* Graph edge input */}
                   {selectedAlgorithm === "graph" && dsOperation === "add-edge" && (
                     <div className="space-y-2">
-                      <Label htmlFor="ds-edge" className="text-base">Edge (from,to or from,to,weight)</Label>
+                      <Label htmlFor="ds-edge-nl" className="text-base">Edge (from,to or from,to,weight)</Label>
                       <Input
-                        id="ds-edge"
+                        id="ds-edge-nl"
                         value={dsValue}
                         onChange={(e) => setDsValue(e.target.value)}
                         placeholder="0,1 or 0,1,5"
                         className="glass code-font"
                       />
                       <p className="text-xs text-muted-foreground">Format: from,to,weight (weight is optional)</p>
-                    </div>
-                  )}
-
-                  {(dsOperation === "insert" || dsOperation === "delete") && selectedAlgorithm === "array" && (
-                    <div className="space-y-2">
-                      <Label htmlFor="ds-position" className="text-base">Position/Index</Label>
-                      <Input
-                        id="ds-position"
-                        type="number"
-                        value={dsPosition}
-                        onChange={(e) => setDsPosition(e.target.value)}
-                        placeholder="Enter position"
-                        className="glass code-font"
-                      />
                     </div>
                   )}
                 </div>
@@ -717,11 +848,7 @@ const Index = () => {
                     <Button 
                       variant="outline" 
                       onClick={() => {
-                        if (selectedAlgorithm === "array") setCurrentArray([5, 10, 15, 20, 25]);
-                        else if (selectedAlgorithm === "stack") setCurrentStack([]);
-                        else if (selectedAlgorithm === "queue") setCurrentQueue([]);
-                        else if (selectedAlgorithm === "linkedlist") setCurrentLinkedList({ nodes: [], head: null });
-                        else if (selectedAlgorithm === "binarytree") setCurrentBinaryTree({ nodes: [], root: null });
+                        if (selectedAlgorithm === "binarytree") setCurrentBinaryTree({ nodes: [], root: null });
                         else if (selectedAlgorithm === "bst") setCurrentBST({ nodes: [], root: null });
                         else if (selectedAlgorithm === "heap") setCurrentHeap({ array: [], heapType });
                         else if (selectedAlgorithm === "graph") setCurrentGraph({ nodes: [], edges: [] });
@@ -739,7 +866,7 @@ const Index = () => {
           </Card>
 
           {/* Algorithm Information */}
-          {selectedAlgoData && hasGenerated && (
+          {selectedAlgoData && hasGenerated && category === "sorting" && (
             <div className="animate-fade-in">
               <AlgorithmInfo
                 name={selectedAlgoData.name}
@@ -748,6 +875,34 @@ const Index = () => {
                 timeComplexity={selectedAlgoData.timeComplexity}
                 spaceComplexity={selectedAlgoData.spaceComplexity}
               />
+            </div>
+          )}
+
+          {/* Data Structure Information */}
+          {selectedDsInfo && hasGenerated && (category === "linear" || category === "nonlinear") && (
+            <div className="animate-fade-in">
+              <Card className="glass p-6 space-y-4 border-primary/30">
+                <div>
+                  <h3 className="text-xl font-bold mb-3 flex items-center gap-2">
+                    <div className="p-2 rounded-lg bg-primary/20">
+                      <Code2 className="w-5 h-5 text-primary" />
+                    </div>
+                    {selectedDsInfo.name}
+                  </h3>
+                </div>
+
+                {/* Complexity */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2 p-4 rounded-xl bg-primary/10 border border-primary/20">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Time Complexity</p>
+                    <p className="text-lg font-bold code-font text-primary">{selectedDsInfo.timeComplexity}</p>
+                  </div>
+                  <div className="space-y-2 p-4 rounded-xl bg-accent/10 border border-accent/20">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Space Complexity</p>
+                    <p className="text-lg font-bold code-font text-accent">{selectedDsInfo.spaceComplexity}</p>
+                  </div>
+                </div>
+              </Card>
             </div>
           )}
 
@@ -763,49 +918,49 @@ const Index = () => {
                     maxValue={maxValue}
                   />
                 )}
-                {category === "datastructures" && selectedAlgorithm === "array" && (
+                {(category === "linear" || category === "nonlinear") && selectedAlgorithm === "array" && (
                   <ArrayVisualizer
                     steps={dataStructureSteps as ArrayStep[]}
                     currentStep={currentStep}
                   />
                 )}
-                {category === "datastructures" && selectedAlgorithm === "stack" && (
+                {(category === "linear" || category === "nonlinear") && selectedAlgorithm === "stack" && (
                   <StackVisualizer
                     steps={dataStructureSteps as StackStep[]}
                     currentStep={currentStep}
                   />
                 )}
-                {category === "datastructures" && selectedAlgorithm === "queue" && (
+                {(category === "linear" || category === "nonlinear") && selectedAlgorithm === "queue" && (
                   <QueueVisualizer
                     steps={dataStructureSteps as QueueStep[]}
                     currentStep={currentStep}
                   />
                 )}
-                {category === "datastructures" && selectedAlgorithm === "linkedlist" && (
+                {(category === "linear" || category === "nonlinear") && selectedAlgorithm === "linkedlist" && (
                   <LinkedListVisualizer
                     steps={dataStructureSteps as LinkedListStep[]}
                     currentStep={currentStep}
                   />
                 )}
-                {category === "datastructures" && selectedAlgorithm === "binarytree" && (
+                {(category === "linear" || category === "nonlinear") && selectedAlgorithm === "binarytree" && (
                   <BinaryTreeVisualizer
                     steps={dataStructureSteps as BinaryTreeStep[]}
                     currentStep={currentStep}
                   />
                 )}
-                {category === "datastructures" && selectedAlgorithm === "bst" && (
+                {(category === "linear" || category === "nonlinear") && selectedAlgorithm === "bst" && (
                   <BSTVisualizer
                     steps={dataStructureSteps as BSTStep[]}
                     currentStep={currentStep}
                   />
                 )}
-                {category === "datastructures" && selectedAlgorithm === "heap" && (
+                {(category === "linear" || category === "nonlinear") && selectedAlgorithm === "heap" && (
                   <HeapVisualizer
                     steps={dataStructureSteps as HeapStep[]}
                     currentStep={currentStep}
                   />
                 )}
-                {category === "datastructures" && selectedAlgorithm === "graph" && (
+                {(category === "linear" || category === "nonlinear") && selectedAlgorithm === "graph" && (
                   <GraphVisualizer
                     steps={dataStructureSteps as GraphStep[]}
                     currentStep={currentStep}
