@@ -19,6 +19,14 @@ import { arrayInsert, arrayDelete, arraySearch, ArrayStep } from "@/utils/arrayO
 import { stackPush, stackPop, stackPeek, StackStep } from "@/utils/stackOperations";
 import { queueEnqueue, queueDequeue, queuePeekFront, QueueStep } from "@/utils/queueOperations";
 import { linkedListInsertHead, linkedListInsertTail, linkedListDelete, linkedListReverse, LinkedListStep } from "@/utils/linkedListOperations";
+import { binaryTreeInsert, binaryTreeInorder, binaryTreePreorder, binaryTreePostorder, binaryTreeSearch, BinaryTreeStep } from "@/utils/binaryTreeOperations";
+import { bstInsert, bstSearch, bstDelete, BSTStep } from "@/utils/bstOperations";
+import { heapBuild, heapInsert, heapExtract, heapPeek, HeapStep } from "@/utils/heapOperations";
+import { graphBFS, graphDFS, graphDijkstra, GraphStep, GraphNode, GraphEdge } from "@/utils/graphOperations";
+import { BinaryTreeVisualizer } from "@/components/BinaryTreeVisualizer";
+import { BSTVisualizer } from "@/components/BSTVisualizer";
+import { HeapVisualizer } from "@/components/HeapVisualizer";
+import { GraphVisualizer } from "@/components/GraphVisualizer";
 import { AlgoChatbot } from "@/components/AlgoChatbot";
 import { AlgorithmRecommender } from "@/components/AlgorithmRecommender";
 
@@ -99,7 +107,7 @@ const Index = () => {
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>("");
   const [inputArray, setInputArray] = useState<string>("64, 34, 25, 12, 22, 11, 90");
   const [sortSteps, setSortSteps] = useState<SortStep[]>([]);
-  const [dataStructureSteps, setDataStructureSteps] = useState<ArrayStep[] | StackStep[] | QueueStep[] | LinkedListStep[]>([]);
+  const [dataStructureSteps, setDataStructureSteps] = useState<ArrayStep[] | StackStep[] | QueueStep[] | LinkedListStep[] | BinaryTreeStep[] | BSTStep[] | HeapStep[] | GraphStep[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(500);
@@ -114,6 +122,11 @@ const Index = () => {
   const [currentStack, setCurrentStack] = useState<number[]>([]);
   const [currentQueue, setCurrentQueue] = useState<number[]>([]);
   const [currentLinkedList, setCurrentLinkedList] = useState<{ nodes: any[], head: number | null }>({ nodes: [], head: null });
+  const [currentBinaryTree, setCurrentBinaryTree] = useState<{ nodes: any[], root: number | null }>({ nodes: [], root: null });
+  const [currentBST, setCurrentBST] = useState<{ nodes: any[], root: number | null }>({ nodes: [], root: null });
+  const [currentHeap, setCurrentHeap] = useState<{ array: number[], heapType: "min" | "max" }>({ array: [], heapType: "min" });
+  const [currentGraph, setCurrentGraph] = useState<{ nodes: GraphNode[], edges: GraphEdge[] }>({ nodes: [], edges: [] });
+  const [heapType, setHeapType] = useState<"min" | "max">("min");
 
   const selectedAlgoData = algorithms.find(a => a.id === selectedAlgorithm);
 
@@ -305,6 +318,105 @@ const Index = () => {
           toast.error("Please provide valid inputs!");
           return;
         }
+      } else if (selectedAlgorithm === "binarytree") {
+        const value = parseInt(dsValue);
+        
+        if (dsOperation === "insert" && !isNaN(value)) {
+          const result = binaryTreeInsert(currentBinaryTree.nodes, currentBinaryTree.root, value);
+          steps = result;
+          const lastStep = result[result.length - 1];
+          setCurrentBinaryTree({ nodes: lastStep.nodes, root: lastStep.root });
+        } else if (dsOperation === "search" && !isNaN(value)) {
+          steps = binaryTreeSearch(currentBinaryTree.nodes, currentBinaryTree.root, value);
+        } else if (dsOperation === "inorder") {
+          steps = binaryTreeInorder(currentBinaryTree.nodes, currentBinaryTree.root);
+        } else if (dsOperation === "preorder") {
+          steps = binaryTreePreorder(currentBinaryTree.nodes, currentBinaryTree.root);
+        } else if (dsOperation === "postorder") {
+          steps = binaryTreePostorder(currentBinaryTree.nodes, currentBinaryTree.root);
+        } else {
+          toast.error("Please provide valid inputs!");
+          return;
+        }
+      } else if (selectedAlgorithm === "bst") {
+        const value = parseInt(dsValue);
+        
+        if (dsOperation === "insert" && !isNaN(value)) {
+          const result = bstInsert(currentBST.nodes, currentBST.root, value);
+          steps = result;
+          const lastStep = result[result.length - 1];
+          setCurrentBST({ nodes: lastStep.nodes, root: lastStep.root });
+        } else if (dsOperation === "search" && !isNaN(value)) {
+          steps = bstSearch(currentBST.nodes, currentBST.root, value);
+        } else if (dsOperation === "delete" && !isNaN(value)) {
+          steps = bstDelete(currentBST.nodes, currentBST.root, value);
+          const lastStep = steps[steps.length - 1];
+          setCurrentBST({ nodes: lastStep.nodes, root: lastStep.root });
+        } else {
+          toast.error("Please provide valid inputs!");
+          return;
+        }
+      } else if (selectedAlgorithm === "heap") {
+        const value = parseInt(dsValue);
+        
+        if (dsOperation === "build") {
+          const arrayValues = dsValue
+            .split(",")
+            .map(v => v.trim())
+            .filter(v => v && !isNaN(Number(v)))
+            .map(v => Number(v));
+          
+          if (arrayValues.length === 0) {
+            toast.error("Please enter valid numbers!");
+            return;
+          }
+          
+          steps = heapBuild(arrayValues, heapType);
+          const lastStep = steps[steps.length - 1];
+          setCurrentHeap({ array: lastStep.array, heapType });
+        } else if (dsOperation === "insert" && !isNaN(value)) {
+          steps = heapInsert(currentHeap.array, value, heapType);
+          const lastStep = steps[steps.length - 1];
+          setCurrentHeap({ array: lastStep.array, heapType });
+        } else if (dsOperation === "extract") {
+          steps = heapExtract(currentHeap.array, heapType);
+          const lastStep = steps[steps.length - 1];
+          setCurrentHeap({ array: lastStep.array, heapType });
+        } else if (dsOperation === "peek") {
+          steps = heapPeek(currentHeap.array, heapType);
+        } else {
+          toast.error("Please provide valid inputs!");
+          return;
+        }
+      } else if (selectedAlgorithm === "graph") {
+        const startNodeId = parseInt(dsValue);
+        
+        if (dsOperation === "bfs" && !isNaN(startNodeId)) {
+          steps = graphBFS(currentGraph.nodes, currentGraph.edges, startNodeId);
+        } else if (dsOperation === "dfs" && !isNaN(startNodeId)) {
+          steps = graphDFS(currentGraph.nodes, currentGraph.edges, startNodeId);
+        } else if (dsOperation === "dijkstra" && !isNaN(startNodeId)) {
+          steps = graphDijkstra(currentGraph.nodes, currentGraph.edges, startNodeId);
+        } else if (dsOperation === "add-node" && !isNaN(startNodeId)) {
+          const newNode: GraphNode = { id: currentGraph.nodes.length, value: startNodeId };
+          setCurrentGraph({ ...currentGraph, nodes: [...currentGraph.nodes, newNode] });
+          toast.success(`Added node ${startNodeId}`);
+          return;
+        } else if (dsOperation === "add-edge") {
+          const [from, to, weight] = dsValue.split(",").map(v => parseInt(v.trim()));
+          if (!isNaN(from) && !isNaN(to)) {
+            const newEdge: GraphEdge = { from, to, weight: !isNaN(weight) ? weight : 1 };
+            setCurrentGraph({ ...currentGraph, edges: [...currentGraph.edges, newEdge] });
+            toast.success(`Added edge ${from} → ${to}${weight ? ` (weight: ${weight})` : ""}`);
+            return;
+          } else {
+            toast.error("Please provide from,to or from,to,weight!");
+            return;
+          }
+        } else {
+          toast.error("Please provide valid inputs!");
+          return;
+        }
       }
 
       setDataStructureSteps(steps);
@@ -432,6 +544,10 @@ const Index = () => {
                         <SelectItem value="stack">Stack</SelectItem>
                         <SelectItem value="queue">Queue</SelectItem>
                         <SelectItem value="linkedlist">Linked List</SelectItem>
+                        <SelectItem value="binarytree">Binary Tree</SelectItem>
+                        <SelectItem value="bst">Binary Search Tree</SelectItem>
+                        <SelectItem value="heap">Heap (Min/Max)</SelectItem>
+                        <SelectItem value="graph">Graph</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -472,12 +588,61 @@ const Index = () => {
                             <SelectItem value="reverse">Reverse List</SelectItem>
                           </>
                         )}
+                        {selectedAlgorithm === "binarytree" && (
+                          <>
+                            <SelectItem value="insert">Insert</SelectItem>
+                            <SelectItem value="search">Search</SelectItem>
+                            <SelectItem value="inorder">Inorder Traversal</SelectItem>
+                            <SelectItem value="preorder">Preorder Traversal</SelectItem>
+                            <SelectItem value="postorder">Postorder Traversal</SelectItem>
+                          </>
+                        )}
+                        {selectedAlgorithm === "bst" && (
+                          <>
+                            <SelectItem value="insert">Insert</SelectItem>
+                            <SelectItem value="search">Search</SelectItem>
+                            <SelectItem value="delete">Delete</SelectItem>
+                          </>
+                        )}
+                        {selectedAlgorithm === "heap" && (
+                          <>
+                            <SelectItem value="build">Build Heap</SelectItem>
+                            <SelectItem value="insert">Insert</SelectItem>
+                            <SelectItem value="extract">Extract {heapType === "min" ? "Min" : "Max"}</SelectItem>
+                            <SelectItem value="peek">Peek</SelectItem>
+                          </>
+                        )}
+                        {selectedAlgorithm === "graph" && (
+                          <>
+                            <SelectItem value="add-node">Add Node</SelectItem>
+                            <SelectItem value="add-edge">Add Edge</SelectItem>
+                            <SelectItem value="bfs">BFS Traversal</SelectItem>
+                            <SelectItem value="dfs">DFS Traversal</SelectItem>
+                            <SelectItem value="dijkstra">Dijkstra's Algorithm</SelectItem>
+                          </>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
 
-                  {/* Stack/Queue bulk input */}
-                  {(dsOperation === "push" || dsOperation === "enqueue") && (
+                  {/* Heap Type Selector */}
+                  {selectedAlgorithm === "heap" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="heap-type" className="text-base">Heap Type</Label>
+                      <Select value={heapType} onValueChange={(v: "min" | "max") => setHeapType(v)}>
+                        <SelectTrigger id="heap-type" className="glass">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="glass border-border bg-popover/95 backdrop-blur-xl">
+                          <SelectItem value="min">Min Heap</SelectItem>
+                          <SelectItem value="max">Max Heap</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {/* Stack/Queue/Heap build bulk input */}
+                  {(dsOperation === "push" || dsOperation === "enqueue" || dsOperation === "build") && (
                     <div className="space-y-2">
                       <Label htmlFor="ds-bulk-value" className="text-base">Values (comma-separated)</Label>
                       <Input
@@ -491,8 +656,8 @@ const Index = () => {
                     </div>
                   )}
                   
-                  {/* Single value input for other operations */}
-                  {(dsOperation === "insert" || dsOperation === "insert-head" || dsOperation === "insert-tail" || dsOperation === "search" || dsOperation === "delete") && (
+                  {/* Single value input for tree/graph operations */}
+                  {(dsOperation === "insert" || dsOperation === "insert-head" || dsOperation === "insert-tail" || dsOperation === "search" || dsOperation === "delete" || dsOperation === "extract" || dsOperation === "bfs" || dsOperation === "dfs" || dsOperation === "dijkstra" || dsOperation === "add-node") && (
                     <div className="space-y-2">
                       <Label htmlFor="ds-value" className="text-base">Value</Label>
                       <Input
@@ -503,6 +668,27 @@ const Index = () => {
                         placeholder="Enter value"
                         className="glass code-font"
                       />
+                      {selectedAlgorithm === "graph" && (dsOperation === "bfs" || dsOperation === "dfs" || dsOperation === "dijkstra") && (
+                        <p className="text-xs text-muted-foreground">Enter starting node ID</p>
+                      )}
+                      {selectedAlgorithm === "graph" && dsOperation === "add-node" && (
+                        <p className="text-xs text-muted-foreground">Enter node value</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Graph edge input */}
+                  {selectedAlgorithm === "graph" && dsOperation === "add-edge" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="ds-edge" className="text-base">Edge (from,to or from,to,weight)</Label>
+                      <Input
+                        id="ds-edge"
+                        value={dsValue}
+                        onChange={(e) => setDsValue(e.target.value)}
+                        placeholder="0,1 or 0,1,5"
+                        className="glass code-font"
+                      />
+                      <p className="text-xs text-muted-foreground">Format: from,to,weight (weight is optional)</p>
                     </div>
                   )}
 
@@ -535,6 +721,10 @@ const Index = () => {
                         else if (selectedAlgorithm === "stack") setCurrentStack([]);
                         else if (selectedAlgorithm === "queue") setCurrentQueue([]);
                         else if (selectedAlgorithm === "linkedlist") setCurrentLinkedList({ nodes: [], head: null });
+                        else if (selectedAlgorithm === "binarytree") setCurrentBinaryTree({ nodes: [], root: null });
+                        else if (selectedAlgorithm === "bst") setCurrentBST({ nodes: [], root: null });
+                        else if (selectedAlgorithm === "heap") setCurrentHeap({ array: [], heapType });
+                        else if (selectedAlgorithm === "graph") setCurrentGraph({ nodes: [], edges: [] });
                         setHasGenerated(false);
                         toast.success("Data structure reset!");
                       }}
@@ -594,6 +784,30 @@ const Index = () => {
                 {category === "datastructures" && selectedAlgorithm === "linkedlist" && (
                   <LinkedListVisualizer
                     steps={dataStructureSteps as LinkedListStep[]}
+                    currentStep={currentStep}
+                  />
+                )}
+                {category === "datastructures" && selectedAlgorithm === "binarytree" && (
+                  <BinaryTreeVisualizer
+                    steps={dataStructureSteps as BinaryTreeStep[]}
+                    currentStep={currentStep}
+                  />
+                )}
+                {category === "datastructures" && selectedAlgorithm === "bst" && (
+                  <BSTVisualizer
+                    steps={dataStructureSteps as BSTStep[]}
+                    currentStep={currentStep}
+                  />
+                )}
+                {category === "datastructures" && selectedAlgorithm === "heap" && (
+                  <HeapVisualizer
+                    steps={dataStructureSteps as HeapStep[]}
+                    currentStep={currentStep}
+                  />
+                )}
+                {category === "datastructures" && selectedAlgorithm === "graph" && (
+                  <GraphVisualizer
+                    steps={dataStructureSteps as GraphStep[]}
                     currentStep={currentStep}
                   />
                 )}
