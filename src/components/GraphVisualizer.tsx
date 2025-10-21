@@ -12,7 +12,7 @@ export const GraphVisualizer = ({ steps, currentStep }: GraphVisualizerProps) =>
   const currentStepData = steps[currentStep];
   if (!currentStepData || !currentStepData.nodes) return null;
 
-  const { nodes, edges, highlightedNodes = [], highlightedEdges = [], visitedNodes = [], distance } = currentStepData;
+  const { nodes, edges = [], highlightedNodes = [], highlightedEdges = [], visitedNodes = [], distance } = currentStepData;
 
   // Simple circular layout for nodes if positions aren't set
   const nodePositions = nodes.map((node, index) => {
