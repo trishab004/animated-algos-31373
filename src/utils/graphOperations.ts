@@ -56,10 +56,10 @@ export const graphBFS = (nodes: GraphNode[], edges: GraphEdge[], startId: number
       highlightedNodes: [currentId]
     });
 
-    // Find neighbors
+    // Find neighbors (treat graph as undirected)
     const neighbors = edges
-      .filter(e => e.from === currentId)
-      .map(e => e.to)
+      .filter(e => e.from === currentId || e.to === currentId)
+      .map(e => e.from === currentId ? e.to : e.from)
       .filter(id => !visited.has(id));
 
     for (const neighborId of neighbors) {
@@ -118,10 +118,10 @@ export const graphDFS = (nodes: GraphNode[], edges: GraphEdge[], startId: number
       highlightedNodes: [currentId]
     });
 
-    // Find neighbors
+    // Find neighbors (treat graph as undirected)
     const neighbors = edges
-      .filter(e => e.from === currentId)
-      .map(e => e.to);
+      .filter(e => e.from === currentId || e.to === currentId)
+      .map(e => e.from === currentId ? e.to : e.from);
 
     for (const neighborId of neighbors) {
       if (!visited.has(neighborId)) {
@@ -250,11 +250,11 @@ export const graphDijkstra = (nodes: GraphNode[], edges: GraphEdge[], startId: n
       distance: new Map(distance)
     });
 
-    // Update distances to neighbors
-    const outgoingEdges = edges.filter(e => e.from === currentId);
+    // Update distances to neighbors (treat graph as undirected)
+    const connectedEdges = edges.filter(e => e.from === currentId || e.to === currentId);
 
-    for (const edge of outgoingEdges) {
-      const neighborId = edge.to;
+    for (const edge of connectedEdges) {
+      const neighborId = edge.from === currentId ? edge.to : edge.from;
       if (visited.has(neighborId)) continue;
 
       const newDist = (distance.get(currentId) || 0) + (edge.weight || 1);
@@ -264,7 +264,7 @@ export const graphDijkstra = (nodes: GraphNode[], edges: GraphEdge[], startId: n
         nodes,
         edges,
         operation: "relaxing",
-        description: `Checking edge ${currentId} → ${neighborId} (weight: ${edge.weight || 1})`,
+        description: `Checking edge ${currentId} ↔ ${neighborId} (weight: ${edge.weight || 1})`,
         currentNode: currentId,
         visitedNodes: Array.from(visited),
         highlightedNodes: [currentId, neighborId],
