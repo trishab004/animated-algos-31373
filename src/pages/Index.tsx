@@ -466,36 +466,6 @@ const Index = () => {
             return;
           }
           steps = graphDFS(currentGraph.nodes, currentGraph.edges, startNodeId);
-        } else if (dsOperation === "dijkstra" && !isNaN(startNodeId)) {
-          const endNodeId = parseInt(dsEndNode);
-          
-          // Validate start node exists
-          const startExists = currentGraph.nodes.some(n => n.id === startNodeId);
-          if (!startExists) {
-            toast.error(`Start node ${startNodeId} doesn't exist! Add nodes first.`);
-            return;
-          }
-          
-          // Validate end node if provided
-          if (!isNaN(endNodeId)) {
-            const endExists = currentGraph.nodes.some(n => n.id === endNodeId);
-            if (!endExists) {
-              toast.error(`End node ${endNodeId} doesn't exist! Add nodes first.`);
-              return;
-            }
-          }
-          
-          if (currentGraph.nodes.length === 0) {
-            toast.error("Graph is empty! Add nodes and edges first.");
-            return;
-          }
-          
-          steps = graphDijkstra(
-            currentGraph.nodes, 
-            currentGraph.edges, 
-            startNodeId,
-            !isNaN(endNodeId) ? endNodeId : undefined
-          );
         } else {
           toast.error("Please provide valid inputs!");
           return;
@@ -701,7 +671,6 @@ const Index = () => {
                             <SelectItem value="add-edge">Add Edge</SelectItem>
                             <SelectItem value="bfs">BFS Traversal</SelectItem>
                             <SelectItem value="dfs">DFS Traversal</SelectItem>
-                            <SelectItem value="dijkstra">Dijkstra's Algorithm</SelectItem>
                           </>
                         )}
                       </SelectContent>
@@ -740,17 +709,15 @@ const Index = () => {
                   )}
                   
                   {/* Single value input for tree/graph operations */}
-                  {(dsOperation === "insert" || dsOperation === "insert-head" || dsOperation === "insert-tail" || dsOperation === "search" || dsOperation === "delete" || dsOperation === "extract" || dsOperation === "bfs" || dsOperation === "dfs" || dsOperation === "dijkstra" || dsOperation === "add-node") && (
+                  {(dsOperation === "insert" || dsOperation === "insert-head" || dsOperation === "insert-tail" || dsOperation === "search" || dsOperation === "delete" || dsOperation === "extract" || dsOperation === "bfs" || dsOperation === "dfs" || dsOperation === "add-node") && (
                     <div className="space-y-2">
-                      <Label htmlFor="ds-value" className="text-base">
-                        {dsOperation === "dijkstra" ? "Start Node" : "Value"}
-                      </Label>
+                      <Label htmlFor="ds-value" className="text-base">Value</Label>
                       <Input
                         id="ds-value"
                         type="number"
                         value={dsValue}
                         onChange={(e) => setDsValue(e.target.value)}
-                        placeholder={dsOperation === "dijkstra" ? "Enter start node" : "Enter value"}
+                        placeholder="Enter value"
                         className="glass code-font"
                       />
                       {selectedAlgorithm === "graph" && (dsOperation === "bfs" || dsOperation === "dfs") && (
@@ -762,21 +729,6 @@ const Index = () => {
                     </div>
                   )}
 
-                  {/* End node input for Dijkstra */}
-                  {selectedAlgorithm === "graph" && dsOperation === "dijkstra" && (
-                    <div className="space-y-2">
-                      <Label htmlFor="ds-end-node" className="text-base">End Node</Label>
-                      <Input
-                        id="ds-end-node"
-                        type="number"
-                        value={dsEndNode}
-                        onChange={(e) => setDsEndNode(e.target.value)}
-                        placeholder="Enter end node"
-                        className="glass code-font"
-                      />
-                      <p className="text-xs text-muted-foreground">The shortest path will be found between start and end nodes</p>
-                    </div>
-                  )}
 
                   {/* Graph edge input */}
                   {selectedAlgorithm === "graph" && dsOperation === "add-edge" && (
