@@ -22,7 +22,7 @@ import { linkedListInsertHead, linkedListInsertTail, linkedListDelete, linkedLis
 import { binaryTreeInsert, binaryTreeInorder, binaryTreePreorder, binaryTreePostorder, binaryTreeSearch, BinaryTreeStep } from "@/utils/binaryTreeOperations";
 import { bstInsert, bstSearch, bstDelete, BSTStep } from "@/utils/bstOperations";
 import { heapBuild, heapInsert, heapExtract, heapPeek, HeapStep } from "@/utils/heapOperations";
-import { graphBFS, graphDFS, graphDijkstra, GraphStep, GraphNode, GraphEdge } from "@/utils/graphOperations";
+import { graphBFS, graphDFS, graphDijkstra, graphShowState, GraphStep, GraphNode, GraphEdge } from "@/utils/graphOperations";
 import { BinaryTreeVisualizer } from "@/components/BinaryTreeVisualizer";
 import { BSTVisualizer } from "@/components/BSTVisualizer";
 import { HeapVisualizer } from "@/components/HeapVisualizer";
@@ -391,28 +391,92 @@ const Index = () => {
       } else if (selectedAlgorithm === "graph") {
         const startNodeId = parseInt(dsValue);
         
-        if (dsOperation === "bfs" && !isNaN(startNodeId)) {
-          steps = graphBFS(currentGraph.nodes, currentGraph.edges, startNodeId);
-        } else if (dsOperation === "dfs" && !isNaN(startNodeId)) {
-          steps = graphDFS(currentGraph.nodes, currentGraph.edges, startNodeId);
-        } else if (dsOperation === "dijkstra" && !isNaN(startNodeId)) {
-          steps = graphDijkstra(currentGraph.nodes, currentGraph.edges, startNodeId);
-        } else if (dsOperation === "add-node" && !isNaN(startNodeId)) {
-          const newNode: GraphNode = { id: currentGraph.nodes.length, value: startNodeId };
-          setCurrentGraph({ ...currentGraph, nodes: [...currentGraph.nodes, newNode] });
-          toast.success(`Added node ${startNodeId}`);
-          return;
+        if (dsOperation === "add-node" && !isNaN(startNodeId)) {
+          // Use the value as both ID and value for simplicity
+          const nodeExists = currentGraph.nodes.some(n => n.id === startNodeId);
+          if (nodeExists) {
+            toast.error(`Node ${startNodeId} already exists!`);
+            return;
+          }
+          const newNode: GraphNode = { id: startNodeId, value: startNodeId };
+          const updatedNodes = [...currentGraph.nodes, newNode];
+          setCurrentGraph({ ...currentGraph, nodes: updatedNodes, edges: currentGraph.edges });
+          
+          // Generate visualization step
+          steps = [{
+            nodes: updatedNodes,
+            edges: currentGraph.edges,
+            operation: "add-node",
+            description: `Added node ${startNodeId} to the graph`,
+            highlightedNodes: [startNodeId],
+            visitedNodes: []
+          }];
         } else if (dsOperation === "add-edge") {
           const [from, to, weight] = dsValue.split(",").map(v => parseInt(v.trim()));
           if (!isNaN(from) && !isNaN(to)) {
+            // Validate that both nodes exist
+            const fromExists = currentGraph.nodes.some(n => n.id === from);
+            const toExists = currentGraph.nodes.some(n => n.id === to);
+            
+            if (!fromExists || !toExists) {
+              toast.error(`Node ${!fromExists ? from : to} doesn't exist! Add nodes first.`);
+              return;
+            }
+            
             const newEdge: GraphEdge = { from, to, weight: !isNaN(weight) ? weight : 1 };
-            setCurrentGraph({ ...currentGraph, edges: [...currentGraph.edges, newEdge] });
-            toast.success(`Added edge ${from} → ${to}${weight ? ` (weight: ${weight})` : ""}`);
-            return;
+            const updatedEdges = [...currentGraph.edges, newEdge];
+            setCurrentGraph({ ...currentGraph, nodes: currentGraph.nodes, edges: updatedEdges });
+            
+            // Generate visualization step
+            steps = [{
+              nodes: currentGraph.nodes,
+              edges: updatedEdges,
+              operation: "add-edge",
+              description: `Added edge from ${from} to ${to}${weight ? ` with weight ${weight}` : ""}`,
+              highlightedNodes: [from, to],
+              highlightedEdges: [[from, to]],
+              visitedNodes: []
+            }];
           } else {
             toast.error("Please provide from,to or from,to,weight!");
             return;
           }
+        } else if (dsOperation === "bfs" && !isNaN(startNodeId)) {
+          // Validate node exists
+          const nodeExists = currentGraph.nodes.some(n => n.id === startNodeId);
+          if (!nodeExists) {
+            toast.error(`Node ${startNodeId} doesn't exist! Add nodes first.`);
+            return;
+          }
+          if (currentGraph.nodes.length === 0) {
+            toast.error("Graph is empty! Add nodes and edges first.");
+            return;
+          }
+          steps = graphBFS(currentGraph.nodes, currentGraph.edges, startNodeId);
+        } else if (dsOperation === "dfs" && !isNaN(startNodeId)) {
+          // Validate node exists
+          const nodeExists = currentGraph.nodes.some(n => n.id === startNodeId);
+          if (!nodeExists) {
+            toast.error(`Node ${startNodeId} doesn't exist! Add nodes first.`);
+            return;
+          }
+          if (currentGraph.nodes.length === 0) {
+            toast.error("Graph is empty! Add nodes and edges first.");
+            return;
+          }
+          steps = graphDFS(currentGraph.nodes, currentGraph.edges, startNodeId);
+        } else if (dsOperation === "dijkstra" && !isNaN(startNodeId)) {
+          // Validate node exists
+          const nodeExists = currentGraph.nodes.some(n => n.id === startNodeId);
+          if (!nodeExists) {
+            toast.error(`Node ${startNodeId} doesn't exist! Add nodes first.`);
+            return;
+          }
+          if (currentGraph.nodes.length === 0) {
+            toast.error("Graph is empty! Add nodes and edges first.");
+            return;
+          }
+          steps = graphDijkstra(currentGraph.nodes, currentGraph.edges, startNodeId);
         } else {
           toast.error("Please provide valid inputs!");
           return;

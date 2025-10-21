@@ -165,6 +165,18 @@ export const graphDFS = (nodes: GraphNode[], edges: GraphEdge[], startId: number
   return steps;
 };
 
+// Helper function to show graph state
+export const graphShowState = (nodes: GraphNode[], edges: GraphEdge[], operation: string, description: string): GraphStep[] => {
+  return [{
+    nodes,
+    edges,
+    operation,
+    description,
+    visitedNodes: [],
+    highlightedNodes: []
+  }];
+};
+
 export const graphDijkstra = (nodes: GraphNode[], edges: GraphEdge[], startId: number): GraphStep[] => {
   const steps: GraphStep[] = [];
   const distance = new Map<number, number>();
