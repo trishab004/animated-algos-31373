@@ -177,22 +177,26 @@ export const graphShowState = (nodes: GraphNode[], edges: GraphEdge[], operation
   }];
 };
 
-export const graphDijkstra = (nodes: GraphNode[], edges: GraphEdge[], startId: number): GraphStep[] => {
+export const graphDijkstra = (nodes: GraphNode[], edges: GraphEdge[], startId: number, endId?: number): GraphStep[] => {
   const steps: GraphStep[] = [];
   const distance = new Map<number, number>();
+  const parent = new Map<number, number | null>();
   const visited = new Set<number>();
   const unvisited = new Set(nodes.map(n => n.id));
 
-  // Initialize distances
+  // Initialize distances and parents
   nodes.forEach(node => {
     distance.set(node.id, node.id === startId ? 0 : Infinity);
+    parent.set(node.id, null);
   });
 
   steps.push({
     nodes,
     edges,
     operation: "start",
-    description: `Starting Dijkstra's algorithm from node ${startId}`,
+    description: endId !== undefined 
+      ? `Finding shortest path from node ${startId} to node ${endId}`
+      : `Starting Dijkstra's algorithm from node ${startId}`,
     highlightedNodes: [startId],
     distance: new Map(distance),
     visitedNodes: []
@@ -212,6 +216,25 @@ export const graphDijkstra = (nodes: GraphNode[], edges: GraphEdge[], startId: n
     }
 
     if (currentId === -1 || minDist === Infinity) break;
+
+    // If we reached the end node, we can stop early
+    if (endId !== undefined && currentId === endId) {
+      unvisited.delete(currentId);
+      visited.add(currentId);
+      
+      steps.push({
+        nodes,
+        edges,
+        operation: "reached-target",
+        description: `Reached target node ${endId} with distance ${minDist}`,
+        currentNode: currentId,
+        visitedNodes: Array.from(visited),
+        highlightedNodes: [currentId],
+        distance: new Map(distance)
+      });
+      
+      break;
+    }
 
     unvisited.delete(currentId);
     visited.add(currentId);
@@ -251,12 +274,13 @@ export const graphDijkstra = (nodes: GraphNode[], edges: GraphEdge[], startId: n
 
       if (newDist < currentDist) {
         distance.set(neighborId, newDist);
+        parent.set(neighborId, currentId);
         
         steps.push({
           nodes,
           edges,
           operation: "updated",
-          description: `Updated distance to ${neighborId}: ${currentDist} → ${newDist}`,
+          description: `Updated distance to ${neighborId}: ${currentDist === Infinity ? '∞' : currentDist} → ${newDist}`,
           currentNode: currentId,
           visitedNodes: Array.from(visited),
           highlightedNodes: [neighborId],
@@ -266,15 +290,58 @@ export const graphDijkstra = (nodes: GraphNode[], edges: GraphEdge[], startId: n
     }
   }
 
-  steps.push({
-    nodes,
-    edges,
-    operation: "complete",
-    description: `Dijkstra's algorithm complete`,
-    visitedNodes: Array.from(visited),
-    highlightedNodes: [],
-    distance: new Map(distance)
-  });
+  // If end node specified, reconstruct and highlight the path
+  if (endId !== undefined) {
+    const path: number[] = [];
+    let current: number | null = endId;
+    
+    // Reconstruct path from end to start
+    while (current !== null) {
+      path.unshift(current);
+      current = parent.get(current) || null;
+    }
+
+    // Check if path was found
+    if (path.length > 0 && path[0] === startId) {
+      const pathEdges: [number, number][] = [];
+      for (let i = 0; i < path.length - 1; i++) {
+        pathEdges.push([path[i], path[i + 1]]);
+      }
+
+      const finalDistance = distance.get(endId) || Infinity;
+      
+      steps.push({
+        nodes,
+        edges,
+        operation: "path-found",
+        description: `Shortest path found: ${path.join(" → ")} (Distance: ${finalDistance})`,
+        visitedNodes: Array.from(visited),
+        highlightedNodes: path,
+        highlightedEdges: pathEdges,
+        distance: new Map(distance)
+      });
+    } else {
+      steps.push({
+        nodes,
+        edges,
+        operation: "no-path",
+        description: `No path exists from node ${startId} to node ${endId}`,
+        visitedNodes: Array.from(visited),
+        highlightedNodes: [startId, endId],
+        distance: new Map(distance)
+      });
+    }
+  } else {
+    steps.push({
+      nodes,
+      edges,
+      operation: "complete",
+      description: `Dijkstra's algorithm complete`,
+      visitedNodes: Array.from(visited),
+      highlightedNodes: [],
+      distance: new Map(distance)
+    });
+  }
 
   return steps;
 };
