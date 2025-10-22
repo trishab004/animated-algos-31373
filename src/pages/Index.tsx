@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Code2, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { SortingVisualizer, SortStep } from "@/components/SortingVisualizer";
+import { SearchingVisualizer, SearchStep } from "@/components/SearchingVisualizer";
 import { ArrayVisualizer } from "@/components/ArrayVisualizer";
 import { StackVisualizer } from "@/components/StackVisualizer";
 import { QueueVisualizer } from "@/components/QueueVisualizer";
@@ -15,6 +16,7 @@ import { LinkedListVisualizer } from "@/components/LinkedListVisualizer";
 import { PlaybackControls } from "@/components/PlaybackControls";
 import { AlgorithmInfo } from "@/components/AlgorithmInfo";
 import { bubbleSort, quickSort, mergeSort } from "@/utils/sortingAlgorithms";
+import { linearSearch, binarySearch, jumpSearch } from "@/utils/searchingAlgorithms";
 import { arrayInsert, arrayDelete, arraySearch, ArrayStep } from "@/utils/arrayOperations";
 import { stackPush, stackPop, stackPeek, StackStep } from "@/utils/stackOperations";
 import { queueEnqueue, queueDequeue, queuePeekFront, QueueStep } from "@/utils/queueOperations";
@@ -102,11 +104,78 @@ const algorithms = [
   },
 ];
 
+const searchAlgorithms = [
+  {
+    id: "linear",
+    name: "Linear Search",
+    description: "A simple search algorithm that checks every element in the array sequentially until the target element is found or the end of the array is reached. Works on both sorted and unsorted arrays.",
+    pseudocode: [
+      "function linearSearch(array, target):",
+      "  for i = 0 to length(array)-1:",
+      "    if array[i] == target:",
+      "      return i",
+      "  return -1 // not found"
+    ],
+    timeComplexity: "O(n)",
+    spaceComplexity: "O(1)",
+    searchFunction: linearSearch
+  },
+  {
+    id: "binary",
+    name: "Binary Search",
+    description: "An efficient search algorithm that works on sorted arrays by repeatedly dividing the search interval in half. It compares the target value to the middle element and eliminates half of the remaining elements in each step.",
+    pseudocode: [
+      "function binarySearch(array, target):",
+      "  left = 0, right = length(array) - 1",
+      "  while left <= right:",
+      "    mid = (left + right) / 2",
+      "    if array[mid] == target:",
+      "      return mid",
+      "    else if array[mid] < target:",
+      "      left = mid + 1",
+      "    else:",
+      "      right = mid - 1",
+      "  return -1 // not found"
+    ],
+    timeComplexity: "O(log n)",
+    spaceComplexity: "O(1)",
+    searchFunction: binarySearch
+  },
+  {
+    id: "jump",
+    name: "Jump Search",
+    description: "A search algorithm for sorted arrays that works by jumping ahead by fixed steps and then performing a linear search in the identified block. The optimal jump size is √n, providing a balance between linear and binary search.",
+    pseudocode: [
+      "function jumpSearch(array, target):",
+      "  n = length(array)",
+      "  jump = sqrt(n)",
+      "  prev = 0",
+      "  while array[min(jump, n)-1] < target:",
+      "    prev = jump",
+      "    jump += sqrt(n)",
+      "    if prev >= n:",
+      "      return -1",
+      "  while array[prev] < target:",
+      "    prev++",
+      "    if prev == min(jump, n):",
+      "      return -1",
+      "  if array[prev] == target:",
+      "    return prev",
+      "  return -1"
+    ],
+    timeComplexity: "O(√n)",
+    spaceComplexity: "O(1)",
+    searchFunction: jumpSearch
+  }
+];
+
 const Index = () => {
-  const [category, setCategory] = useState<"sorting" | "datastructures">("sorting");
+  const [category, setCategory] = useState<"sorting" | "searching" | "datastructures">("sorting");
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>("");
   const [inputArray, setInputArray] = useState<string>("64, 34, 25, 12, 22, 11, 90");
   const [sortSteps, setSortSteps] = useState<SortStep[]>([]);
+  const [searchSteps, setSearchSteps] = useState<SearchStep[]>([]);
+  const [searchTarget, setSearchTarget] = useState<string>("22");
   const [dataStructureSteps, setDataStructureSteps] = useState<ArrayStep[] | StackStep[] | QueueStep[] | LinkedListStep[] | BinaryTreeStep[] | BSTStep[] | HeapStep[] | GraphStep[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -130,6 +199,7 @@ const Index = () => {
   const [heapType, setHeapType] = useState<"min" | "max">("min");
 
   const selectedAlgoData = algorithms.find(a => a.id === selectedAlgorithm);
+  const selectedSearchAlgoData = searchAlgorithms.find(a => a.id === selectedAlgorithm);
 
   // Cleanup interval on unmount
   useEffect(() => {
@@ -142,7 +212,7 @@ const Index = () => {
 
   // Auto-play functionality
   useEffect(() => {
-    const totalSteps = category === "sorting" ? sortSteps.length : dataStructureSteps.length;
+    const totalSteps = category === "sorting" ? sortSteps.length : category === "searching" ? searchSteps.length : dataStructureSteps.length;
     
     if (isPlaying && totalSteps > 0) {
       intervalRef.current = setInterval(() => {
@@ -165,7 +235,7 @@ const Index = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isPlaying, sortSteps.length, dataStructureSteps.length, speed, category]);
+  }, [isPlaying, sortSteps.length, searchSteps.length, dataStructureSteps.length, speed, category]);
 
   const handleGenerate = () => {
     if (category === "sorting") {
@@ -195,6 +265,43 @@ const Index = () => {
 
       const steps = algo.sortFunction(arrayValues);
       setSortSteps(steps);
+      setCurrentStep(0);
+      setIsPlaying(false);
+      setHasGenerated(true);
+      toast.success("Visualization generated! Press play to start.");
+    } else if (category === "searching") {
+      if (!selectedAlgorithm) {
+        toast.error("Please select a search algorithm first!");
+        return;
+      }
+
+      const arrayValues = inputArray
+        .split(",")
+        .map(v => v.trim())
+        .filter(v => v && !isNaN(Number(v)))
+        .map(v => Number(v));
+
+      if (arrayValues.length === 0) {
+        toast.error("Please enter valid numbers!");
+        return;
+      }
+
+      if (arrayValues.length > 20) {
+        toast.error("Please enter 20 or fewer numbers for better visualization!");
+        return;
+      }
+
+      const target = parseInt(searchTarget);
+      if (isNaN(target)) {
+        toast.error("Please enter a valid target value!");
+        return;
+      }
+
+      const searchAlgo = searchAlgorithms.find(a => a.id === selectedAlgorithm);
+      if (!searchAlgo) return;
+
+      const steps = searchAlgo.searchFunction(arrayValues, target);
+      setSearchSteps(steps);
       setCurrentStep(0);
       setIsPlaying(false);
       setHasGenerated(true);
@@ -499,13 +606,15 @@ const Index = () => {
   };
 
   const handleStepForward = () => {
-    const totalSteps = category === "sorting" ? sortSteps.length : dataStructureSteps.length;
+    const totalSteps = category === "sorting" ? sortSteps.length : category === "searching" ? searchSteps.length : dataStructureSteps.length;
     setCurrentStep((prev) => Math.min(totalSteps - 1, prev + 1));
     setIsPlaying(false);
   };
 
   const maxValue = sortSteps.length > 0 
     ? Math.max(...sortSteps[0].array)
+    : searchSteps.length > 0
+    ? Math.max(...searchSteps[0].array)
     : 100;
 
   return (
@@ -532,8 +641,9 @@ const Index = () => {
           {/* Main Control Panel */}
           <Card className="glass p-8 animate-fade-in">
             <Tabs value={category} onValueChange={(v) => { setCategory(v as any); setHasGenerated(false); setSelectedAlgorithm(""); }}>
-              <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6">
-                <TabsTrigger value="sorting">Sorting Algorithms</TabsTrigger>
+              <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-6">
+                <TabsTrigger value="sorting">Sorting</TabsTrigger>
+                <TabsTrigger value="searching">Searching</TabsTrigger>
                 <TabsTrigger value="datastructures">Data Structures</TabsTrigger>
               </TabsList>
 
@@ -570,6 +680,61 @@ const Index = () => {
                       className="glass code-font"
                     />
                     <p className="text-xs text-muted-foreground">Enter comma-separated numbers</p>
+                  </div>
+                </div>
+
+                <Button onClick={handleGenerate} disabled={isPlaying} className="w-full md:w-auto gradient-primary hover:opacity-90 transition-opacity text-white font-semibold py-6 px-8 text-lg glow-primary">
+                  <Zap className="w-5 h-5 mr-2" />
+                  Generate Visualization
+                </Button>
+              </TabsContent>
+
+              <TabsContent value="searching" className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold mb-2">Configure Searching Algorithm</h2>
+                  <p className="text-muted-foreground">Select an algorithm and provide input to visualize</p>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="search-algorithm" className="text-base">Select Algorithm</Label>
+                    <Select value={selectedAlgorithm} onValueChange={setSelectedAlgorithm}>
+                      <SelectTrigger id="search-algorithm" className="glass">
+                        <SelectValue placeholder="Choose an algorithm..." />
+                      </SelectTrigger>
+                      <SelectContent className="glass border-border bg-popover/95 backdrop-blur-xl">
+                        {searchAlgorithms.map((algo) => (
+                          <SelectItem key={algo.id} value={algo.id} className="focus:bg-primary/20 focus:text-primary">
+                            {algo.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="search-array" className="text-base">Input Array</Label>
+                    <Input
+                      id="search-array"
+                      value={inputArray}
+                      onChange={(e) => setInputArray(e.target.value)}
+                      placeholder="5, 3, 8, 1, 9, 2"
+                      className="glass code-font"
+                    />
+                    <p className="text-xs text-muted-foreground">Enter comma-separated numbers</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="search-target" className="text-base">Target Value</Label>
+                    <Input
+                      id="search-target"
+                      type="number"
+                      value={searchTarget}
+                      onChange={(e) => setSearchTarget(e.target.value)}
+                      placeholder="22"
+                      className="glass code-font"
+                    />
+                    <p className="text-xs text-muted-foreground">Value to search for</p>
                   </div>
                 </div>
 
@@ -792,7 +957,7 @@ const Index = () => {
           </Card>
 
           {/* Algorithm Information */}
-          {selectedAlgoData && hasGenerated && (
+          {selectedAlgoData && hasGenerated && category === "sorting" && (
             <div className="animate-fade-in">
               <AlgorithmInfo
                 name={selectedAlgoData.name}
@@ -803,15 +968,34 @@ const Index = () => {
               />
             </div>
           )}
+          
+          {selectedSearchAlgoData && hasGenerated && category === "searching" && (
+            <div className="animate-fade-in">
+              <AlgorithmInfo
+                name={selectedSearchAlgoData.name}
+                description={selectedSearchAlgoData.description}
+                pseudocode={selectedSearchAlgoData.pseudocode}
+                timeComplexity={selectedSearchAlgoData.timeComplexity}
+                spaceComplexity={selectedSearchAlgoData.spaceComplexity}
+              />
+            </div>
+          )}
 
           {/* Visualization Area */}
-          {hasGenerated && (category === "sorting" ? sortSteps.length > 0 : dataStructureSteps.length > 0) && (
+          {hasGenerated && (category === "sorting" ? sortSteps.length > 0 : category === "searching" ? searchSteps.length > 0 : dataStructureSteps.length > 0) && (
             <div className="grid lg:grid-cols-3 gap-6 animate-fade-in">
               {/* Visualizer */}
               <div className="lg:col-span-2">
                 {category === "sorting" && (
                   <SortingVisualizer
                     steps={sortSteps}
+                    currentStep={currentStep}
+                    maxValue={maxValue}
+                  />
+                )}
+                {category === "searching" && (
+                  <SearchingVisualizer
+                    steps={searchSteps}
                     currentStep={currentStep}
                     maxValue={maxValue}
                   />
@@ -877,7 +1061,7 @@ const Index = () => {
                   speed={speed}
                   onSpeedChange={setSpeed}
                   currentStep={currentStep}
-                  totalSteps={category === "sorting" ? sortSteps.length : dataStructureSteps.length}
+                  totalSteps={category === "sorting" ? sortSteps.length : category === "searching" ? searchSteps.length : dataStructureSteps.length}
                 />
               </div>
             </div>
@@ -898,7 +1082,7 @@ const Index = () => {
       </footer>
 
       {/* AI Chatbot Mentor */}
-      <AlgoChatbot currentStep={currentStep} algorithm={selectedAlgoData?.name} />
+      <AlgoChatbot currentStep={currentStep} algorithm={selectedAlgoData?.name || selectedSearchAlgoData?.name} />
     </div>
   );
 };
