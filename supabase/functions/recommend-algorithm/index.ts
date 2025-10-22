@@ -18,29 +18,47 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `You are an expert algorithm consultant. Analyze the user's problem and recommend the most suitable sorting algorithm.
+    const systemPrompt = `You are an expert algorithm and data structure consultant. Analyze the user's problem and recommend the most suitable algorithm or data structure.
 
-Available algorithms in this app:
+Available in this app:
+
+SORTING ALGORITHMS:
 - Bubble Sort: Simple, O(n²), good for educational purposes or nearly sorted small arrays
 - Quick Sort: Efficient, O(n log n) average case, great for general-purpose sorting
 - Merge Sort: Stable, O(n log n) guaranteed, good for linked lists or when stability matters
 
+SEARCHING ALGORITHMS:
+- Linear Search: O(n), works on unsorted data, simple implementation
+- Binary Search: O(log n), requires sorted data, very efficient
+- Jump Search: O(√n), good balance between linear and binary for sorted data
+
+DATA STRUCTURES:
+- Array: Fast access O(1), fixed/dynamic size
+- Stack: LIFO, O(1) push/pop, great for undo/recursion/parsing
+- Queue: FIFO, O(1) enqueue/dequeue, perfect for BFS/scheduling
+- Linked List: Dynamic size, O(1) insertion/deletion at ends
+- Binary Tree: Hierarchical, O(log n) average for balanced trees
+- BST: Sorted binary tree, O(log n) search/insert/delete when balanced
+- Heap: Priority queue, O(log n) insert/delete, O(1) get min/max
+- Graph: Relationships, various algorithms (BFS O(V+E), DFS O(V+E))
+
 Consider:
+- Problem type (sorting, searching, storing, traversing)
 - Input size and characteristics
 - Time/space complexity requirements
-- Stability needs
-- Best/average/worst case scenarios
+- Access patterns needed
+- Ordering requirements
 
 Provide:
-1. Recommended algorithm name
+1. Recommended algorithm/data structure name
 2. Brief rationale (2-3 sentences)
 3. Key advantage for this specific use case`;
 
     const userMessage = `Problem: ${problem}
-${arraySize ? `Array size: ${arraySize}` : ""}
+${arraySize ? `Data size: ${arraySize}` : ""}
 ${constraints ? `Constraints: ${constraints}` : ""}
 
-Which sorting algorithm should I use?`;
+Which algorithm or data structure should I use?`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

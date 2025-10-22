@@ -47,9 +47,9 @@ export const AlgorithmRecommender = () => {
             <Lightbulb className="w-5 h-5 text-accent" />
           </div>
           <div>
-            <h3 className="text-lg font-bold">AI Algorithm Recommender</h3>
+            <h3 className="text-lg font-bold">AI Algorithm & Data Structure Recommender</h3>
             <p className="text-sm text-muted-foreground">
-              Describe your problem and get the best algorithm suggestion
+              Describe your problem and get the best algorithm or data structure suggestion
             </p>
           </div>
         </div>
@@ -61,7 +61,7 @@ export const AlgorithmRecommender = () => {
             id="problem"
             value={problem}
             onChange={(e) => setProblem(e.target.value)}
-            placeholder="Example: I have an unsorted list of 1000 numbers and need to find the median quickly..."
+            placeholder="Example: I need to store tasks with priorities and always process the highest priority first... OR I have 1000 sorted numbers and need to find if a value exists... OR I need to find the shortest path between two locations..."
             className="glass min-h-[100px] resize-none"
             disabled={isLoading}
           />
