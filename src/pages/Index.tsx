@@ -169,6 +169,451 @@ const searchAlgorithms = [
   }
 ];
 
+// Data Structure Operations Metadata
+const dataStructureOperations: Record<string, Record<string, {
+  name: string;
+  description: string;
+  pseudocode: string[];
+  timeComplexity: string;
+  spaceComplexity: string;
+}>> = {
+  array: {
+    insert: {
+      name: "Array Insert",
+      description: "Insert an element at a specific position in the array. All elements after the insertion point are shifted one position to the right.",
+      pseudocode: [
+        "function insert(array, value, position):",
+        "  if position > array.length:",
+        "    return error",
+        "  shift all elements from position onwards to right",
+        "  array[position] = value",
+        "  return array"
+      ],
+      timeComplexity: "O(n) - Need to shift elements",
+      spaceComplexity: "O(1) - In-place operation"
+    },
+    delete: {
+      name: "Array Delete",
+      description: "Delete an element at a specific position in the array. All elements after the deletion point are shifted one position to the left.",
+      pseudocode: [
+        "function delete(array, position):",
+        "  if position >= array.length:",
+        "    return error",
+        "  shift all elements after position to left",
+        "  reduce array length by 1",
+        "  return array"
+      ],
+      timeComplexity: "O(n) - Need to shift elements",
+      spaceComplexity: "O(1) - In-place operation"
+    },
+    search: {
+      name: "Array Search",
+      description: "Search for a value in the array using linear search. Returns the index if found, -1 otherwise.",
+      pseudocode: [
+        "function search(array, value):",
+        "  for i from 0 to array.length - 1:",
+        "    if array[i] == value:",
+        "      return i",
+        "  return -1"
+      ],
+      timeComplexity: "O(n) - Linear scan",
+      spaceComplexity: "O(1) - No extra space"
+    }
+  },
+  stack: {
+    push: {
+      name: "Stack Push",
+      description: "Add an element to the top of the stack. Follows Last-In-First-Out (LIFO) principle.",
+      pseudocode: [
+        "function push(stack, value):",
+        "  if stack.size == MAX_SIZE:",
+        "    return overflow error",
+        "  stack.top = stack.top + 1",
+        "  stack[top] = value",
+        "  return success"
+      ],
+      timeComplexity: "O(1) - Constant time operation",
+      spaceComplexity: "O(1) - Only one element added"
+    },
+    pop: {
+      name: "Stack Pop",
+      description: "Remove and return the top element from the stack. Returns error if stack is empty.",
+      pseudocode: [
+        "function pop(stack):",
+        "  if stack.top < 0:",
+        "    return underflow error",
+        "  value = stack[top]",
+        "  stack.top = stack.top - 1",
+        "  return value"
+      ],
+      timeComplexity: "O(1) - Constant time operation",
+      spaceComplexity: "O(1) - No extra space"
+    },
+    peek: {
+      name: "Stack Peek",
+      description: "Return the top element without removing it. Returns error if stack is empty.",
+      pseudocode: [
+        "function peek(stack):",
+        "  if stack.top < 0:",
+        "    return error",
+        "  return stack[top]"
+      ],
+      timeComplexity: "O(1) - Constant time operation",
+      spaceComplexity: "O(1) - No extra space"
+    }
+  },
+  queue: {
+    enqueue: {
+      name: "Queue Enqueue",
+      description: "Add an element to the rear of the queue. Follows First-In-First-Out (FIFO) principle.",
+      pseudocode: [
+        "function enqueue(queue, value):",
+        "  if queue.size == MAX_SIZE:",
+        "    return overflow error",
+        "  queue.rear = (queue.rear + 1) % MAX_SIZE",
+        "  queue[rear] = value",
+        "  return success"
+      ],
+      timeComplexity: "O(1) - Constant time operation",
+      spaceComplexity: "O(1) - Only one element added"
+    },
+    dequeue: {
+      name: "Queue Dequeue",
+      description: "Remove and return the front element from the queue. Returns error if queue is empty.",
+      pseudocode: [
+        "function dequeue(queue):",
+        "  if queue.front == queue.rear:",
+        "    return underflow error",
+        "  value = queue[front]",
+        "  queue.front = (queue.front + 1) % MAX_SIZE",
+        "  return value"
+      ],
+      timeComplexity: "O(1) - Constant time operation",
+      spaceComplexity: "O(1) - No extra space"
+    },
+    peek: {
+      name: "Queue Peek Front",
+      description: "Return the front element without removing it. Returns error if queue is empty.",
+      pseudocode: [
+        "function peekFront(queue):",
+        "  if queue is empty:",
+        "    return error",
+        "  return queue[front]"
+      ],
+      timeComplexity: "O(1) - Constant time operation",
+      spaceComplexity: "O(1) - No extra space"
+    }
+  },
+  linkedlist: {
+    insertHead: {
+      name: "Linked List Insert at Head",
+      description: "Insert a new node at the beginning of the linked list. The new node becomes the head.",
+      pseudocode: [
+        "function insertHead(list, value):",
+        "  newNode = createNode(value)",
+        "  newNode.next = list.head",
+        "  list.head = newNode",
+        "  return list"
+      ],
+      timeComplexity: "O(1) - Direct insertion at head",
+      spaceComplexity: "O(1) - One new node"
+    },
+    insertTail: {
+      name: "Linked List Insert at Tail",
+      description: "Insert a new node at the end of the linked list. Requires traversing to the last node.",
+      pseudocode: [
+        "function insertTail(list, value):",
+        "  newNode = createNode(value)",
+        "  if list.head is null:",
+        "    list.head = newNode",
+        "  else:",
+        "    current = list.head",
+        "    while current.next is not null:",
+        "      current = current.next",
+        "    current.next = newNode",
+        "  return list"
+      ],
+      timeComplexity: "O(n) - Need to traverse to tail",
+      spaceComplexity: "O(1) - One new node"
+    },
+    delete: {
+      name: "Linked List Delete",
+      description: "Delete the first node with the specified value. Updates pointers to maintain list integrity.",
+      pseudocode: [
+        "function delete(list, value):",
+        "  if list.head.value == value:",
+        "    list.head = list.head.next",
+        "    return list",
+        "  current = list.head",
+        "  while current.next is not null:",
+        "    if current.next.value == value:",
+        "      current.next = current.next.next",
+        "      return list",
+        "    current = current.next",
+        "  return list"
+      ],
+      timeComplexity: "O(n) - May need to traverse entire list",
+      spaceComplexity: "O(1) - No extra space"
+    },
+    reverse: {
+      name: "Linked List Reverse",
+      description: "Reverse the direction of all pointers in the linked list, making the tail the new head.",
+      pseudocode: [
+        "function reverse(list):",
+        "  prev = null",
+        "  current = list.head",
+        "  while current is not null:",
+        "    next = current.next",
+        "    current.next = prev",
+        "    prev = current",
+        "    current = next",
+        "  list.head = prev",
+        "  return list"
+      ],
+      timeComplexity: "O(n) - Visit each node once",
+      spaceComplexity: "O(1) - Only pointer variables"
+    }
+  },
+  binarytree: {
+    insert: {
+      name: "Binary Tree Insert",
+      description: "Insert a new node using level-order traversal to find the first available position.",
+      pseudocode: [
+        "function insert(tree, value):",
+        "  newNode = createNode(value)",
+        "  if tree.root is null:",
+        "    tree.root = newNode",
+        "    return",
+        "  queue = [tree.root]",
+        "  while queue is not empty:",
+        "    current = queue.dequeue()",
+        "    if current.left is null:",
+        "      current.left = newNode",
+        "      return",
+        "    else if current.right is null:",
+        "      current.right = newNode",
+        "      return",
+        "    queue.enqueue(current.left)",
+        "    queue.enqueue(current.right)"
+      ],
+      timeComplexity: "O(n) - Level-order traversal",
+      spaceComplexity: "O(n) - Queue for traversal"
+    },
+    delete: {
+      name: "Binary Tree Delete",
+      description: "Delete a node and replace it with the deepest rightmost node to maintain tree structure.",
+      pseudocode: [
+        "function delete(tree, value):",
+        "  find node to delete using level-order",
+        "  find deepest rightmost node",
+        "  replace deleted node's value with deepest node",
+        "  delete deepest rightmost node",
+        "  return tree"
+      ],
+      timeComplexity: "O(n) - Level-order traversal",
+      spaceComplexity: "O(n) - Queue for traversal"
+    },
+    search: {
+      name: "Binary Tree Search",
+      description: "Search for a value in the binary tree using level-order traversal.",
+      pseudocode: [
+        "function search(tree, value):",
+        "  if tree.root is null:",
+        "    return not found",
+        "  queue = [tree.root]",
+        "  while queue is not empty:",
+        "    current = queue.dequeue()",
+        "    if current.value == value:",
+        "      return found",
+        "    if current.left:",
+        "      queue.enqueue(current.left)",
+        "    if current.right:",
+        "      queue.enqueue(current.right)",
+        "  return not found"
+      ],
+      timeComplexity: "O(n) - May visit all nodes",
+      spaceComplexity: "O(n) - Queue for traversal"
+    }
+  },
+  bst: {
+    insert: {
+      name: "BST Insert",
+      description: "Insert a new node while maintaining Binary Search Tree property (left < root < right).",
+      pseudocode: [
+        "function insert(tree, value):",
+        "  if tree.root is null:",
+        "    tree.root = createNode(value)",
+        "    return",
+        "  current = tree.root",
+        "  while true:",
+        "    if value < current.value:",
+        "      if current.left is null:",
+        "        current.left = createNode(value)",
+        "        return",
+        "      current = current.left",
+        "    else:",
+        "      if current.right is null:",
+        "        current.right = createNode(value)",
+        "        return",
+        "      current = current.right"
+      ],
+      timeComplexity: "O(log n) average, O(n) worst - Tree height dependent",
+      spaceComplexity: "O(1) - Iterative approach"
+    },
+    delete: {
+      name: "BST Delete",
+      description: "Delete a node while maintaining BST property. Handles three cases: leaf, one child, two children.",
+      pseudocode: [
+        "function delete(tree, value):",
+        "  find node and its parent",
+        "  case 1 - leaf node:",
+        "    remove node",
+        "  case 2 - one child:",
+        "    replace node with child",
+        "  case 3 - two children:",
+        "    find inorder successor (smallest in right subtree)",
+        "    replace node's value with successor's value",
+        "    delete successor",
+        "  return tree"
+      ],
+      timeComplexity: "O(log n) average, O(n) worst - Tree height dependent",
+      spaceComplexity: "O(1) - Iterative approach"
+    },
+    search: {
+      name: "BST Search",
+      description: "Search for a value using BST property to efficiently narrow down the search space.",
+      pseudocode: [
+        "function search(tree, value):",
+        "  current = tree.root",
+        "  while current is not null:",
+        "    if value == current.value:",
+        "      return found",
+        "    else if value < current.value:",
+        "      current = current.left",
+        "    else:",
+        "      current = current.right",
+        "  return not found"
+      ],
+      timeComplexity: "O(log n) average, O(n) worst - Tree height dependent",
+      spaceComplexity: "O(1) - Iterative approach"
+    }
+  },
+  heap: {
+    insert: {
+      name: "Heap Insert",
+      description: "Insert a new element at the end and bubble up to maintain heap property (min or max).",
+      pseudocode: [
+        "function insert(heap, value):",
+        "  heap.array.push(value)",
+        "  index = heap.array.length - 1",
+        "  while index > 0:",
+        "    parent = (index - 1) / 2",
+        "    if heap satisfies property:",
+        "      break",
+        "    swap(heap[index], heap[parent])",
+        "    index = parent",
+        "  return heap"
+      ],
+      timeComplexity: "O(log n) - Height of heap",
+      spaceComplexity: "O(1) - In-place operation"
+    },
+    extract: {
+      name: "Heap Extract",
+      description: "Remove and return the root (min or max), replace with last element, and heapify down.",
+      pseudocode: [
+        "function extract(heap):",
+        "  if heap is empty:",
+        "    return error",
+        "  root = heap[0]",
+        "  heap[0] = heap[last]",
+        "  heap.removeLast()",
+        "  heapifyDown(0)",
+        "  return root",
+        "",
+        "function heapifyDown(index):",
+        "  while has children:",
+        "    find min/max child",
+        "    if heap property satisfied:",
+        "      break",
+        "    swap with child",
+        "    index = child"
+      ],
+      timeComplexity: "O(log n) - Height of heap",
+      spaceComplexity: "O(1) - In-place operation"
+    },
+    peek: {
+      name: "Heap Peek",
+      description: "Return the root element (minimum for min-heap, maximum for max-heap) without removing it.",
+      pseudocode: [
+        "function peek(heap):",
+        "  if heap is empty:",
+        "    return error",
+        "  return heap[0]"
+      ],
+      timeComplexity: "O(1) - Direct access to root",
+      spaceComplexity: "O(1) - No extra space"
+    },
+    build: {
+      name: "Heap Build",
+      description: "Convert an unordered array into a heap by heapifying from bottom to top.",
+      pseudocode: [
+        "function build(array, heapType):",
+        "  for i from (array.length / 2) down to 0:",
+        "    heapifyDown(i)",
+        "  return heap",
+        "",
+        "Start from last non-leaf node",
+        "Work backwards to ensure all subtrees",
+        "satisfy heap property before their parent"
+      ],
+      timeComplexity: "O(n) - Linear time build",
+      spaceComplexity: "O(1) - In-place operation"
+    }
+  },
+  graph: {
+    bfs: {
+      name: "Graph BFS (Breadth-First Search)",
+      description: "Explore graph level by level using a queue. Visits all neighbors before going deeper.",
+      pseudocode: [
+        "function BFS(graph, startNode):",
+        "  visited = set()",
+        "  queue = [startNode]",
+        "  visited.add(startNode)",
+        "  while queue is not empty:",
+        "    current = queue.dequeue()",
+        "    process(current)",
+        "    for each neighbor of current:",
+        "      if neighbor not in visited:",
+        "        visited.add(neighbor)",
+        "        queue.enqueue(neighbor)",
+        "  return visited"
+      ],
+      timeComplexity: "O(V + E) - Visit all vertices and edges",
+      spaceComplexity: "O(V) - Queue and visited set"
+    },
+    dfs: {
+      name: "Graph DFS (Depth-First Search)",
+      description: "Explore graph by going as deep as possible before backtracking. Uses a stack (or recursion).",
+      pseudocode: [
+        "function DFS(graph, startNode):",
+        "  visited = set()",
+        "  stack = [startNode]",
+        "  while stack is not empty:",
+        "    current = stack.pop()",
+        "    if current not in visited:",
+        "      visited.add(current)",
+        "      process(current)",
+        "      for each neighbor of current:",
+        "        if neighbor not in visited:",
+        "          stack.push(neighbor)",
+        "  return visited"
+      ],
+      timeComplexity: "O(V + E) - Visit all vertices and edges",
+      spaceComplexity: "O(V) - Stack and visited set"
+    }
+  }
+};
+
 const Index = () => {
   const [category, setCategory] = useState<"sorting" | "searching" | "datastructures">("sorting");
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>("");
@@ -200,6 +645,9 @@ const Index = () => {
 
   const selectedAlgoData = algorithms.find(a => a.id === selectedAlgorithm);
   const selectedSearchAlgoData = searchAlgorithms.find(a => a.id === selectedAlgorithm);
+  const selectedDsOperationData = selectedAlgorithm && dsOperation 
+    ? dataStructureOperations[selectedAlgorithm]?.[dsOperation]
+    : null;
 
   // Cleanup interval on unmount
   useEffect(() => {
@@ -977,6 +1425,18 @@ const Index = () => {
                 pseudocode={selectedSearchAlgoData.pseudocode}
                 timeComplexity={selectedSearchAlgoData.timeComplexity}
                 spaceComplexity={selectedSearchAlgoData.spaceComplexity}
+              />
+            </div>
+          )}
+
+          {selectedDsOperationData && hasGenerated && category === "datastructures" && (
+            <div className="animate-fade-in">
+              <AlgorithmInfo
+                name={selectedDsOperationData.name}
+                description={selectedDsOperationData.description}
+                pseudocode={selectedDsOperationData.pseudocode}
+                timeComplexity={selectedDsOperationData.timeComplexity}
+                spaceComplexity={selectedDsOperationData.spaceComplexity}
               />
             </div>
           )}
