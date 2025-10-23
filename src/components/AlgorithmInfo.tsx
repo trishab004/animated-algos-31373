@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Code2 } from "lucide-react";
+import { ComplexityExplainer } from "./ComplexityExplainer";
 
 interface AlgorithmInfoProps {
   name: string;
@@ -51,11 +52,17 @@ export const AlgorithmInfo = ({
       {/* Complexity */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2 p-4 rounded-xl bg-primary/10 border border-primary/20">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">Time Complexity</p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">Time Complexity</p>
+            <ComplexityExplainer complexity={timeComplexity} type="time" algorithmContext={name} />
+          </div>
           <p className="text-2xl font-bold code-font text-primary">{timeComplexity}</p>
         </div>
         <div className="space-y-2 p-4 rounded-xl bg-accent/10 border border-accent/20">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">Space Complexity</p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">Space Complexity</p>
+            <ComplexityExplainer complexity={spaceComplexity} type="space" algorithmContext={name} />
+          </div>
           <p className="text-2xl font-bold code-font text-accent">{spaceComplexity}</p>
         </div>
       </div>
