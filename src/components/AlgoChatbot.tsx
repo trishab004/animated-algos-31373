@@ -21,7 +21,7 @@ export const AlgoChatbot = ({ currentStep, algorithm }: AlgoChatbotProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "👋 Hi! I'm AlgoSensei, your algorithm mentor. Ask me anything about the sorting visualization!",
+      content: "👋 Hi! I'm AlgoSensei, your algorithm mentor. Ask me anything about algorithms and data structures!",
     },
   ]);
   const [input, setInput] = useState("");
